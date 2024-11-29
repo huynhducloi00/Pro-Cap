@@ -7,7 +7,8 @@ import torch.nn.functional as F
 import config
 from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score
-from transformers import get_linear_schedule_with_warmup,AdamW
+from transformers import get_linear_schedule_with_warmup
+from torch.optim import AdamW
 from dataset import Multimodal_Data
 
 def bce_for_loss(logits,labels):
@@ -61,7 +62,7 @@ def train_for_epoch(opt,model,train_loader,test_loader):
     if os.path.exists(log_path)==False:
         os.mkdir(log_path)
     logger=utils.Logger(os.path.join(log_path,str(opt.SAVE_NUM)+'.txt'))  
-    log_hyperpara(logger,opt)
+    # log_hyperpara(logger,opt)
     logger.write('Length of training set: %d, length of testing set: %d' %
                  (len(train_loader.dataset),len(test_loader.dataset)))
     logger.write('Max length of sentences: %d' % (model.max_length))

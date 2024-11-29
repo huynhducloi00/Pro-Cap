@@ -9,7 +9,7 @@ def parse_opt():
     #path configuration
     parser.add_argument('--DATA',
                         type=str,
-                        default='/Data_Storage/Rui_Data_Space/hate-speech')
+                        default='../../Data')
     parser.add_argument('--CAPTION_PATH',
                         type=str,
                         default='/Data_Storage/Rui_Code_Space/hate-speech/CLIP_prefix_caption')
@@ -58,7 +58,7 @@ def parse_opt():
     parser.add_argument('--EPOCHS',type=int,default=10)
     
     parser.add_argument('--SEED', type=int, default=1111, help='random seed')
-    parser.add_argument('--CUDA_DEVICE', type=int, default=13)
+    parser.add_argument('--CUDA_DEVICE', type=int, default=0)
     
     parser.add_argument('--WARM_UP',type=int,default=2000)
     

@@ -14,7 +14,7 @@ class PromptHateModel(nn.Module):
         for word in label_words:
             self.label_word_list.append(self.tokenizer._convert_token_to_id(
                 self.tokenizer.tokenize(' ' + word)[0]))
-        print (label_words,self.label_word_list)
+        print (f"Token for label_words {label_words}: {self.label_word_list}")
 
     def forward_single_cap(self,tokens,attention_mask,mask_pos):
         batch_size = tokens.size(0)

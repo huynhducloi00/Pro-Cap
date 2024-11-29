@@ -85,7 +85,6 @@ class Multimodal_Data():
         #print ('Loading data from:',self.dataset)
         #only in training mode, in few-shot setting the loading will be different
         path=os.path.join(self.opt.DATA,
-                          'domain_splits',
                           self.opt.DATASET+'_'+mode+'.json')
         data=read_json(path)
         if self.opt.CAP_TYPE=='caption':

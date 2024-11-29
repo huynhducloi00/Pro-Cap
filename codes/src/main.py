@@ -1,3 +1,7 @@
+from utils import set_env
+
+
+set_env(4)
 import torch
 import numpy as np
 import random
