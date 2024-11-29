@@ -47,6 +47,92 @@ def log_hyperpara(logger,opt):
     for k,v in dic.items():
         logger.write(k + ' : ' + str(v))
         
+def eval_model(opt,model,test_loader):
+    scores=0.0
+    auc=0.0
+    len_data=len(test_loader.dataset)
+    print ('Length of test set:',len_data)
+    total_logits=[]
+    total_labels=[]
+    for i,batch in enumerate(test_loader):
+        with torch.no_grad():
+            label=batch['label'].float().cuda().view(-1,1)
+            target=batch['target'].cuda()
+            img=batch['img']
+            if opt.MODEL =='pbm':
+                if opt.USE_DEMO:
+                    text=batch['prompt_all_text']
+                else:
+                    text=batch['test_all_text']#without demonstrations
+            elif opt.MODEL=='roberta':
+                text=batch['test_text']#without mask templates
+            
+            logits=model(text)
+            batch_score=compute_score(logits,target)
+            scores+=batch_score
+            norm_logits=F.softmax(logits,dim=-1)[:,1].unsqueeze(-1)
+            bz=target.shape[0]
+            total_logits.append(norm_logits)
+            total_labels.append(label)
+    total_logits=torch.cat(total_logits,dim=0)
+    total_labels=torch.cat(total_labels,dim=0)
+    print (total_logits.shape,total_labels.shape)
+    auc=compute_auc_score(total_logits,total_labels)
+    #print (auc)
+    return scores*100.0/len_data,auc*100.0/len_data
+
+def eval_multi_model(opt,model):
+    num_queries=opt.NUM_QUERIES
+    labels_record={}
+    logits_record={}
+    prob_record={}
+    # print ('Length of test set:',len_data)
+    with torch.no_grad():
+        for k in trange(num_queries):    
+            test_loader=DataLoader(Multimodal_Data(opt,opt.DATASET,'test'),
+                            opt.BATCH_SIZE,
+                            shuffle=False,
+                            num_workers=2)
+            len_data=len(test_loader.dataset)
+            for batch in tqdm(test_loader, leave=False):
+                img=batch['img']
+                target=batch['target'].cuda()
+                text=batch['prompt_all_text']
+                logits=model(text)
+                norm_prob=F.softmax(logits,dim=-1)
+                norm_logits=norm_prob[:,1].unsqueeze(-1)
+                
+                bz=target.shape[0]
+                label=batch['label'].float().cuda().view(-1,1)
+                for j in range(bz):
+                    cur_img=img[j]
+                    cur_logits=norm_logits[j:j+1]
+                    #should normalize to the same scale
+                    cur_prob=norm_prob[j:j+1]
+                    if k==0:
+                        cur_label=label[j:j+1]
+                        labels_record[cur_img]=cur_label
+                        logits_record[cur_img]=cur_logits
+                        prob_record[cur_img]=cur_prob
+                    else:
+                        logits_record[cur_img]+=cur_logits
+                        prob_record[cur_img]+=cur_prob
+    labels=[] 
+    logits=[]
+    probs=[]
+    for name in labels_record.keys():
+        labels.append(labels_record[name])
+        logits.append(logits_record[name]/num_queries)
+        probs.append(prob_record[name]/num_queries)
+            
+    logits=torch.cat(logits,dim=0)
+    labels=torch.cat(labels,dim=0)
+    probs=torch.cat(probs,dim=0)
+    
+    scores=compute_scaler_score(probs,labels)
+    auc=compute_auc_score(logits,labels)
+    #print (auc)
+    return scores*100.0/len_data,auc*100.0/len_data        
 def train_for_epoch(opt,model,train_loader,test_loader):
     #initialization of saving path
     if opt.SAVE:
@@ -54,10 +140,6 @@ def train_for_epoch(opt,model,train_loader,test_loader):
                           '_'.join([opt.MODEL,str(opt.SEED),opt.DATASET]))
         if os.path.exists(model_path)==False:
             os.mkdir(model_path)
-    #multi-qeury configuration
-    if opt.MULTI_QUERY and opt.MODEL=='pbm':
-        from transformers import RobertaTokenizer
-        tokenizer = RobertaTokenizer.from_pretrained('roberta-large')
     #initialization of logger
     log_path=os.path.join(opt.DATASET)
     if os.path.exists(log_path)==False:
@@ -166,90 +248,3 @@ def train_for_epoch(opt,model,train_loader,test_loader):
     logger.write('Maximum epoch: %d' %(max_idx))
     logger.write('\tevaluation auc: %.2f, accuracy: %.2f' % (record_auc[max_idx], 
                                                              record_acc[max_idx]))
-        
-def eval_model(opt,model,test_loader):
-    scores=0.0
-    auc=0.0
-    len_data=len(test_loader.dataset)
-    print ('Length of test set:',len_data)
-    total_logits=[]
-    total_labels=[]
-    for i,batch in enumerate(test_loader):
-        with torch.no_grad():
-            label=batch['label'].float().cuda().view(-1,1)
-            target=batch['target'].cuda()
-            img=batch['img']
-            if opt.MODEL =='pbm':
-                if opt.USE_DEMO:
-                    text=batch['prompt_all_text']
-                else:
-                    text=batch['test_all_text']#without demonstrations
-            elif opt.MODEL=='roberta':
-                text=batch['test_text']#without mask templates
-            
-            logits=model(text)
-            batch_score=compute_score(logits,target)
-            scores+=batch_score
-            norm_logits=F.softmax(logits,dim=-1)[:,1].unsqueeze(-1)
-            bz=target.shape[0]
-            total_logits.append(norm_logits)
-            total_labels.append(label)
-    total_logits=torch.cat(total_logits,dim=0)
-    total_labels=torch.cat(total_labels,dim=0)
-    print (total_logits.shape,total_labels.shape)
-    auc=compute_auc_score(total_logits,total_labels)
-    #print (auc)
-    return scores*100.0/len_data,auc*100.0/len_data
-
-def eval_multi_model(opt,model):
-    num_queries=opt.NUM_QUERIES
-    labels_record={}
-    logits_record={}
-    prob_record={}
-    # print ('Length of test set:',len_data)
-    with torch.no_grad():
-        for k in trange(num_queries):    
-            test_loader=DataLoader(Multimodal_Data(opt,opt.DATASET,'test'),
-                            opt.BATCH_SIZE,
-                            shuffle=False,
-                            num_workers=2)
-            len_data=len(test_loader.dataset)
-            for batch in tqdm(test_loader, leave=False):
-                img=batch['img']
-                target=batch['target'].cuda()
-                text=batch['prompt_all_text']
-                logits=model(text)
-                norm_prob=F.softmax(logits,dim=-1)
-                norm_logits=norm_prob[:,1].unsqueeze(-1)
-                
-                bz=target.shape[0]
-                label=batch['label'].float().cuda().view(-1,1)
-                for j in range(bz):
-                    cur_img=img[j]
-                    cur_logits=norm_logits[j:j+1]
-                    #should normalize to the same scale
-                    cur_prob=norm_prob[j:j+1]
-                    if k==0:
-                        cur_label=label[j:j+1]
-                        labels_record[cur_img]=cur_label
-                        logits_record[cur_img]=cur_logits
-                        prob_record[cur_img]=cur_prob
-                    else:
-                        logits_record[cur_img]+=cur_logits
-                        prob_record[cur_img]+=cur_prob
-    labels=[] 
-    logits=[]
-    probs=[]
-    for name in labels_record.keys():
-        labels.append(labels_record[name])
-        logits.append(logits_record[name]/num_queries)
-        probs.append(prob_record[name]/num_queries)
-            
-    logits=torch.cat(logits,dim=0)
-    labels=torch.cat(labels,dim=0)
-    probs=torch.cat(probs,dim=0)
-    
-    scores=compute_scaler_score(probs,labels)
-    auc=compute_auc_score(logits,labels)
-    #print (auc)
-    return scores*100.0/len_data,auc*100.0/len_data
