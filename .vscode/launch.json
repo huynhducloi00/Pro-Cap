@@ -13,6 +13,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
+                "--EPOCHS","2",
                 "--SAVE_NUM",
                 "821",
                 "--SEED",

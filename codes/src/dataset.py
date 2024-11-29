@@ -62,7 +62,7 @@ class Multimodal_Data():
         self.add_ent=self.opt.ADD_ENT
         self.add_dem=self.opt.ADD_DEM
         self.num_meme_cap=self.opt.NUM_MEME_CAP
-        print ('Adding exntity information?',self.add_ent)
+        print ('Adding entity information?',self.add_ent)
         print ('Adding demographic information?',self.add_dem)
         
         self.label_mapping_word={0:self.opt.POS_WORD,
@@ -220,11 +220,11 @@ class Multimodal_Data():
         order = np.random.permutation(len(context_examples))
         for i in order:
             label = context_examples[i]['label']
-            if num_labels == 1:
-                # Regression
-                #No implementation currently
-                label = '0' if\
-                float(label) <= median_mapping[self.args.task_name] else '1'
+            # if num_labels == 1:
+            #     # Regression
+            #     #No implementation currently
+            #     label = '0' if\
+            #     float(label) <= median_mapping[self.args.task_name] else '1'
             if counts[label] < max_demo_per_label:
                 selection.append(context_examples[i])
                 counts[label] += 1
@@ -257,7 +257,7 @@ class Multimodal_Data():
         #query item
         entry=self.entries[index]
         #bootstrap_idx --> sample_idx
-        query_idx, context_indices, bootstrap_idx = self.example_idx[index]
+        _, context_indices, _ = self.example_idx[index]
         #one example from each class
         supports = self.select_context(
             [self.support_examples[i] for i in context_indices])

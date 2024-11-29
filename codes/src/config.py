@@ -55,7 +55,7 @@ def parse_opt():
     parser.add_argument('--DEBUG',type=bool,default=False)
     parser.add_argument('--SAVE',type=bool,default=False)
     parser.add_argument('--SAVE_NUM',type=int,default=100)
-    parser.add_argument('--EPOCHS',type=int,default=10)
+    parser.add_argument('--EPOCHS',type=int,default=1)
     
     parser.add_argument('--SEED', type=int, default=1111, help='random seed')
     parser.add_argument('--CUDA_DEVICE', type=int, default=0)

@@ -2,6 +2,7 @@ import os
 import time 
 import torch
 import torch.nn as nn
+from tqdm import tqdm, trange
 import utils
 import torch.nn.functional as F
 import config
@@ -113,18 +114,15 @@ def train_for_epoch(opt,model,train_loader,test_loader):
                                     num_warmup_steps=0,
                                     num_training_steps=num_training_steps
                                    )
-    loss_fn=torch.nn.BCELoss()
-    loss_fct = nn.KLDivLoss(log_target=True)
     #strat training
     record_auc=[]
     record_acc=[]
-    for epoch in range(opt.EPOCHS):
+    for _ in trange(opt.EPOCHS):
         model.train(True)
         total_loss=0.0
         scores=0.0
-        for i,batch in enumerate(train_loader):
-            #break
-            label=batch['label'].float().cuda().view(-1,1)
+        pbar=tqdm(enumerate(train_loader), total=len(train_loader), leave=False)
+        for _,batch in pbar:
             target=batch['target'].cuda()
             if opt.MODEL =='pbm':
                 if opt.USE_DEMO:
@@ -141,24 +139,23 @@ def train_for_epoch(opt,model,train_loader,test_loader):
             batch_score=compute_score(logits,target)
             scores+=batch_score
             
-            print ('Epoch:',epoch,'Iteration:', i, loss.item(),batch_score)
+            pbar.set_postfix_str(f"{loss.item():.2f} {batch_score:.2f}")
             loss.backward()
             optim.step()
             scheduler.step()
             optim.zero_grad()
             
             total_loss+=loss
-        
+            
         model.train(False)
         scores/=len(train_loader.dataset)
         if opt.MODEL=='pbm' and opt.USE_DEMO and opt.MULTI_QUERY:
-            eval_acc,eval_auc=eval_multi_model(opt,model,tokenizer)
+            eval_acc,eval_auc=eval_multi_model(opt,model)
         else:
             eval_acc,eval_auc=eval_model(opt,model,test_loader)
             
         record_auc.append(eval_auc)
         record_acc.append(eval_acc)
-        logger.write('Epoch %d' %(epoch))
         logger.write('\ttrain_loss: %.2f, accuracy: %.2f' % (total_loss, 
                                                              scores*100.0))
         logger.write('\tevaluation auc: %.2f, accuracy: %.2f' % (eval_auc, 
@@ -204,22 +201,20 @@ def eval_model(opt,model,test_loader):
     #print (auc)
     return scores*100.0/len_data,auc*100.0/len_data
 
-def eval_multi_model(opt,model, tokenizer):
+def eval_multi_model(opt,model):
     num_queries=opt.NUM_QUERIES
     labels_record={}
     logits_record={}
     prob_record={}
-    for k in range(num_queries):
-        test_set=Multimodal_Data(opt,opt.DATASET,'test')
-        test_loader=DataLoader(test_set,
-                               opt.BATCH_SIZE,
-                               shuffle=False,
-                               num_workers=2)
-        len_data=len(test_loader.dataset)
-        print ('Length of test set:',len_data,'Query:',k)
-        for i,batch in enumerate(test_loader):
-            with torch.no_grad():
-                label=batch['label'].float().cuda().view(-1,1)
+    # print ('Length of test set:',len_data)
+    with torch.no_grad():
+        for k in trange(num_queries):    
+            test_loader=DataLoader(Multimodal_Data(opt,opt.DATASET,'test'),
+                            opt.BATCH_SIZE,
+                            shuffle=False,
+                            num_workers=2)
+            len_data=len(test_loader.dataset)
+            for batch in tqdm(test_loader, leave=False):
                 img=batch['img']
                 target=batch['target'].cuda()
                 text=batch['prompt_all_text']
@@ -228,6 +223,7 @@ def eval_multi_model(opt,model, tokenizer):
                 norm_logits=norm_prob[:,1].unsqueeze(-1)
                 
                 bz=target.shape[0]
+                label=batch['label'].float().cuda().view(-1,1)
                 for j in range(bz):
                     cur_img=img[j]
                     cur_logits=norm_logits[j:j+1]
