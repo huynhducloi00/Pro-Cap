@@ -1,24 +1,15 @@
+from utils import set_seed
 from utils import set_env
 
 
 set_env(4)
+from dataset import Multimodal_Data
+import pbm
 import torch
-import numpy as np
-import random
 
 import config
-import os
 from train import train_for_epoch
 from torch.utils.data import DataLoader
-
-def set_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    np.random.seed(seed)
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
 
 if __name__=='__main__':
     opt=config.parse_opt()
@@ -29,9 +20,6 @@ if __name__=='__main__':
     # Create tokenizer
     constructor='build_baseline'
     if opt.MODEL=='pbm':
-        from dataset import Multimodal_Data
-        import pbm
-        
         train_set=Multimodal_Data(opt,opt.DATASET,'train')
         test_set=Multimodal_Data(opt,opt.DATASET,'test')
         

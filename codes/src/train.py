@@ -1,9 +1,9 @@
 import os
 import pickle
-import time
 import torch
 import torch.nn as nn
 from tqdm import tqdm, trange
+from utils import set_seed
 import utils
 import torch.nn.functional as F
 import config
@@ -90,6 +90,7 @@ def eval_model(opt, model, test_loader):
 
 @torch.no_grad()
 def eval_multi_model(epoch, opt, model):
+    set_seed(opt.SEED)
     num_queries = opt.NUM_QUERIES
     labels_record = {}
     input_record = {}
