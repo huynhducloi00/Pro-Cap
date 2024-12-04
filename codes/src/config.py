@@ -2,7 +2,7 @@ import argparse
 
 def parse_opt():
     parser=argparse.ArgumentParser()
-    parser.add_argument('--DATASET',type=str,default='mem')
+    parser.add_argument('--DATASET',type=str,default='harm')
     parser.add_argument('--MODEL',type=str,default='pbm')
     parser.add_argument('--CAP_TYPE',type=str,default='vqa')#caption
     
@@ -17,7 +17,7 @@ def parse_opt():
     parser.add_argument('--BERT_DIM',type=int,default=768)
     parser.add_argument('--ROBERTA_DIM',type=int,default=1024)
     parser.add_argument('--NUM_LABELS',type=int,default=2)
-    
+    parser.add_argument('--LLM',type=bool,default=True)
     parser.add_argument('--POS_WORD',type=str,default='good')
     parser.add_argument('--NEG_WORD',type=str,default='bad')
     parser.add_argument('--MULTI_QUERY',type=bool,default=True)

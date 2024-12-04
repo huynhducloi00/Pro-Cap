@@ -1,12 +1,12 @@
 import os
 import json
 import pickle as pkl
+import h5py
 import numpy as np
+import pandas as pd
 import torch
 import utils
 from tqdm import tqdm
-import config
-import random
 
 def load_pkl(path):
     data=pkl.load(open(path,'rb'))
@@ -48,7 +48,7 @@ def read_jsonl(path):
 
 class Multimodal_Data():
     #mem, off, harm
-    def __init__(self,opt,dataset,mode='train'):
+    def __init__(self,opt,mode='train'):
         super(Multimodal_Data,self).__init__()
         self.opt=opt
         self.mode=mode
@@ -82,8 +82,6 @@ class Multimodal_Data():
         print ('The length of the dataset for:',mode,'is:',len(self.entries))
 
     def load_entries(self,mode):
-        #print ('Loading data from:',self.dataset)
-        #only in training mode, in few-shot setting the loading will be different
         path=os.path.join(self.opt.DATA,
                           self.opt.DATASET+'_'+mode+'.json')
         data=read_json(path)
@@ -272,12 +270,6 @@ class Multimodal_Data():
         label=torch.tensor(entry['label'])
         target=torch.from_numpy(np.zeros((self.num_ans),dtype=np.float32))
         target[label]=1.0
-        """
-        print ('Test sent:')
-        print ('\t',concate_sent[0]+' . </s> ')
-        print ('Prompt text:')
-        print ('\t',prompt_texts)
-        """
         batch={
             'img':vid,
             'target':target,

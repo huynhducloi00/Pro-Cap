@@ -1,9 +1,11 @@
-from utils import set_seed
 from utils import set_env
 
 
 set_env(4)
-from dataset import Multimodal_Data
+from roberta_dataset import Multimodal_Data
+from utils import set_seed
+
+from llm_dataset import LLM_Data
 import pbm
 import torch
 
@@ -16,12 +18,12 @@ if __name__=='__main__':
     torch.cuda.set_device(opt.CUDA_DEVICE)
     set_seed(opt.SEED)
     
-    
-    # Create tokenizer
+    data_class=LLM_Data if opt.LLM else Multimodal_Data
+    # Create tokenizer 
     constructor='build_baseline'
     if opt.MODEL=='pbm':
-        train_set=Multimodal_Data(opt,opt.DATASET,'train')
-        test_set=Multimodal_Data(opt,opt.DATASET,'test')
+        train_set=data_class(opt,'train')
+        test_set=data_class(opt,'test')
         
         max_length=opt.LENGTH+opt.CAP_LENGTH
         #for one example, default 50
@@ -31,27 +33,26 @@ if __name__=='__main__':
         """
         if opt.ASK_CAP!='':
             num_ask_cap=len(opt.ASK_CAP.split(','))
-            print ('Number of asking captions',num_ask_cap)
-            all_cap_len=opt.CAP_LENGTH * num_ask_cap#default, 12*5=60
+            all_cap_len=opt.CAP_LENGTH * num_ask_cap #default, 12*5=60
             max_length+=all_cap_len
         if opt.NUM_MEME_CAP>0:
-            num_meme_cap=opt.NUM_MEME_CAP
-            max_length+=num_meme_cap*opt.CAP_LENGTH#default, 12*x
-            print ('Number of meme aware captions',num_meme_cap)
+            max_length+=opt.NUM_MEME_CAP*opt.CAP_LENGTH #default, 12*x
         if opt.USE_DEMO:
             max_length*=(opt.NUM_SAMPLE*opt.NUM_LABELS+1)
             
         label_words=[opt.POS_WORD,opt.NEG_WORD]
         model=getattr(pbm,constructor)(label_words,max_length).cuda()
-        
+    train_set=[train_set.convert_to_item(i) for i in range(len(train_set.entries))]
+    test_set=[test_set.convert_to_item(i) for i in range(len(test_set.entries))]
+    torch.save(train_set, 'trainset_llm.pkl');torch.save(test_set, 'testset_llm.pkl');print('xong');exit(0)
+    
     train_loader=DataLoader(train_set,
                             opt.BATCH_SIZE,
-                            shuffle=True,
-                            num_workers=2)
+                            shuffle=True)
     test_loader=DataLoader(test_set,
                            opt.BATCH_SIZE,
-                           shuffle=False,
-                           num_workers=2)
+                           shuffle=False)
+    
     train_for_epoch(opt,model,train_loader,test_loader)
     
     exit(0)

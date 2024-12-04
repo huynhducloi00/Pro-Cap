@@ -6,12 +6,11 @@ from tqdm import tqdm, trange
 from utils import set_seed
 import utils
 import torch.nn.functional as F
-import config
 from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score
 from transformers import get_linear_schedule_with_warmup
 from torch.optim import AdamW
-from dataset import Multimodal_Data
+from roberta_dataset import Multimodal_Data
 
 
 def bce_for_loss(logits, labels):

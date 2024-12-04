@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Inference",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "try_llama_prompt.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Run ProCap",
             "type": "debugpy",
             "request": "launch",
@@ -13,7 +21,8 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "--EPOCHS","2",
+                "--EPOCHS",
+                "2",
                 "--SAVE_NUM",
                 "821",
                 "--SEED",

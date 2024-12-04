@@ -1,2 +1,5 @@
 *.pyc
 *.txt
+*.pkl
+results/
+wandb/
