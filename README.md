@@ -41,7 +41,13 @@ The code is tested with python 3.8. To run the code, you should install the pack
 
 ###
 ## Prepare Datasets  
-We have tested on three benchmarks for hateful meme detection: *Facebook Hateful Meme* (FHM), *Multimedia Automatic Misogyny Identification* (MAMI) and *Harmful Memes* (HarM). Datasets are available online. You can either download datasets via links in the original dataset papers or use the files in the **Data** folder provided by us.
+We have tested on three benchmarks for hateful meme detection: *Facebook Hateful Meme* (FHM), *Multimedia Automatic Misogyny Identification* (MAMI) and *Harmful Memes* (HarM). 
+
+## HarM: (done) from https://github.com/LCS2-IIITD/MOMENTA/tree/main/HarMeme_V1/Annotations/Harm-C
+## MAMI: 
+
+
+Datasets are available online. You can either download datasets via links in the original dataset papers or use the files in the **Data** folder provided by us.
 
 For memes, we conduct data pre-processing such as image resizing, text detection and removal and image impainting according to the [HimariO's project][ronzhu]. In our augmentation setting (i.e., augmentation of entities and demographic, see Section 5.3 for details), we detect entities with Google Vision API and conduct face recognition with FairFace. All augmented information is included in our provided data in the **Data** folder. If you want to apply to your own data, please refer to [HimariO's project][ronzhu] for more details.
 

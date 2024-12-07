@@ -14,7 +14,7 @@ from train import train_for_epoch
 from torch.utils.data import DataLoader
 
 if __name__=='__main__':
-    opt=config.parse_opt()
+    opt=config.sparse_opt()
     torch.cuda.set_device(opt.CUDA_DEVICE)
     set_seed(opt.SEED)
     
@@ -44,7 +44,7 @@ if __name__=='__main__':
         model=getattr(pbm,constructor)(label_words,max_length).cuda()
     train_set=[train_set.convert_to_item(i) for i in range(len(train_set.entries))]
     test_set=[test_set.convert_to_item(i) for i in range(len(test_set.entries))]
-    torch.save(train_set, 'trainset_llm.pkl');torch.save(test_set, 'testset_llm.pkl');print('xong');exit(0)
+    torch.save(train_set, 'fhm_trainset_llm.pkl');torch.save(test_set, 'fhm_testset_llm.pkl');print('xong');exit(0)
     
     train_loader=DataLoader(train_set,
                             opt.BATCH_SIZE,
