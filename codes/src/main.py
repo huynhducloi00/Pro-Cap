@@ -14,7 +14,7 @@ from train import train_for_epoch
 from torch.utils.data import DataLoader
 
 if __name__=='__main__':
-    opt=config.sparse_opt()
+    opt=config.parse_opt()
     torch.cuda.set_device(opt.CUDA_DEVICE)
     set_seed(opt.SEED)
     

@@ -89,8 +89,8 @@ class LLM_Data:
         if self.opt.CAP_TYPE == "caption":
             cap_path = os.path.join(
                 self.opt.CAPTION_PATH,
-                self.opt.DATASET + "_" + self.opt.PRETRAIN_DATA,
-                self.opt.IMG_VERSION + "_captions.pkl",
+                f"{self.opt.DATASET}_{self.opt.PRETRAIN_DATA}",
+                f"{self.opt.IMG_VERSION}_captions.pkl",
             )
         elif self.opt.CAP_TYPE == "vqa":
             cap_path = os.path.join(
@@ -101,7 +101,7 @@ class LLM_Data:
                 result_files = {
                     q: load_pkl(
                         os.path.join(
-                            "../../Ask-Captions/" + self.opt.LONG + "Captions",
+                            f"../../Ask-Captions/{self.opt.LONG}Captions",
                             self.opt.DATASET,
                             mode + "_" + q + ".pkl",
                         )
@@ -114,7 +114,7 @@ class LLM_Data:
                         os.path.join(
                             "../../Ask-Captions/" + self.opt.LONG + "Captions",
                             self.opt.DATASET,
-                            mode + "_" + v + ".pkl",
+                            f"{mode}_{v}.pkl",
                         )
                     )
 
