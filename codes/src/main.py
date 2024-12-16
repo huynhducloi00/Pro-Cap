@@ -44,7 +44,7 @@ if __name__=='__main__':
         model=getattr(pbm,constructor)(label_words,max_length).cuda()
     train_set=[train_set.convert_to_item(i) for i in range(len(train_set.entries))]
     test_set=[test_set.convert_to_item(i) for i in range(len(test_set.entries))]
-    torch.save(train_set, 'fhm_trainset_llm.pkl');torch.save(test_set, 'fhm_testset_llm.pkl');print('xong');exit(0)
+    torch.save(train_set, f'{opt.DATASET}_trainset_llm.pkl');torch.save(test_set, f'{opt.DATASET}_testset_llm.pkl');print('xong');exit(0)
     
     train_loader=DataLoader(train_set,
                             opt.BATCH_SIZE,

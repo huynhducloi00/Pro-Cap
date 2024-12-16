@@ -94,30 +94,20 @@ class LLM_Data:
             )
         elif self.opt.CAP_TYPE == "vqa":
             cap_path = os.path.join(
-                "../../Ask-Captions/Captions", self.opt.DATASET, mode + "_generic.pkl"
+                "../../Ask-Captions/Captions", self.opt.DATASET, f"{mode}_generic.pkl"
             )
             if self.opt.ASK_CAP != "":
-                questions = self.opt.ASK_CAP.split(",")
+                questions = self.opt.ASK_CAP.split(",") + ["valid_person", "valid_animal"]
                 result_files = {
                     q: load_pkl(
                         os.path.join(
                             f"../../Ask-Captions/{self.opt.LONG}Captions",
                             self.opt.DATASET,
-                            mode + "_" + q + ".pkl",
+                            f"{mode}_{q}.pkl",
                         )
                     )
                     for q in questions
                 }
-                valid = ["valid_person", "valid_animal"]
-                for v in valid:
-                    result_files[v] = load_pkl(
-                        os.path.join(
-                            "../../Ask-Captions/" + self.opt.LONG + "Captions",
-                            self.opt.DATASET,
-                            f"{mode}_{v}.pkl",
-                        )
-                    )
-
         captions = load_pkl(cap_path)
         entries = []
         for _, row in enumerate(data):
@@ -140,7 +130,7 @@ class LLM_Data:
                 if animal.startswith("no"):
                     animal_flag = False
                 for q in questions:
-                    if person_flag == False and q in [
+                    if (not person_flag) and q in [
                         "race",
                         "gender",
                         "country",

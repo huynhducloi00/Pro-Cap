@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Llama2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "pokemon.py", //"download_llma_vlm.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Inference",
             "type": "debugpy",
             "request": "launch",
@@ -22,7 +30,7 @@
             "justMyCode": false,
             "args": [
                 "--DATASET",
-                "fhm",
+                "mami",
                 "--EPOCHS",
                 "2",
                 "--SAVE_NUM",

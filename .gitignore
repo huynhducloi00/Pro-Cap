@@ -3,3 +3,4 @@
 *.pkl
 results/
 wandb/
+idefics-9b-PokemonCards/
