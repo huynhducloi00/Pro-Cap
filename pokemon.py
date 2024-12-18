@@ -95,7 +95,7 @@ def ds_transforms(example_batch):
 
 if __name__ == "__main__":
     #Load and prepare the data
-    ds = load_dataset("TheFusion21/PokemonCards")
+    ds = torch.load('pokemon_final_dataset.pkl')
     ds = ds["train"].train_test_split(test_size=0.002)
     train_ds = ds["train"]
     eval_ds = ds["test"]
